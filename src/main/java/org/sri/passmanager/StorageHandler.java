@@ -8,7 +8,7 @@ import java.nio.file.StandardOpenOption;
 
 public class StorageHandler {
 
-    public static void storeToFile(
+    public void storeToFile(
             String encryptedText,
             Path filePath
     ) {
@@ -28,7 +28,7 @@ public class StorageHandler {
         }
     }
 
-    public static String readFile(Path filePath) {
+    public String readFile(Path filePath) {
 
         try {
             // Read encrypted Base64 text from file
