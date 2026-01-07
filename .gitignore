@@ -36,3 +36,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Password Files ###
+vault.dat
+passwords.dat
