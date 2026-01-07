@@ -1,4 +1,4 @@
-package org.sri.moviebooking;
+package org.sri.passmanager;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

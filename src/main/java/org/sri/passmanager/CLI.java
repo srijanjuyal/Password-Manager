@@ -1,11 +1,11 @@
-package org.sri.moviebooking;
+package org.sri.passmanager;
 
 import java.util.Scanner;
 import java.nio.file.Path;
 
 public class CLI {
 
-    public static void runner(String SECRET_KEY, Path filePath){
+    public void runner(String SECRET_KEY, Path filePath){
 
         Scanner sc = new Scanner(System.in);
         AESEncryption aes = new AESEncryption();

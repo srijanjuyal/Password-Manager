@@ -1,4 +1,4 @@
-package org.sri.moviebooking;
+package org.sri.passmanager;
 
 import javax.crypto.*;
 import javax.crypto.spec.*;
