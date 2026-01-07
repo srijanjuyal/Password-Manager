@@ -1,36 +1,130 @@
-# Password Manager
-A tool for storing passwords behind a super password.
-Uses AES-GCM to encrypt the passwords.
+# Java Password Manager (Local, Encrypted)
 
-## Explaining code structure
+A **local, file-based password manager** written in Java.  
+All passwords are encrypted using **AES-256-GCM**, protected by a **single master password**.  
+No server. No cloud. No plaintext storage.
 
-The entire code is stored in [./src/main/java/org/sri/passmanager/](./src/main/java/org/sri/passmanager/)
+This project is designed to demonstrate **correct cryptographic architecture**, not UI polish.
 
-Following are the java files associated with the code:
+---
 
-- [Main.java](./src/main/java/org/sri/passmanager/Main.java) : Contains main function for the execution of the code
+##  Security Model
 
+- User sets **one master password**
+- Master password is **never stored**
+- A strong key is derived using **PBKDF2**
+- That key is kept **only in memory after login**
+- All stored passwords are encrypted using **AES-GCM**
+- If the master password is wrong, nothing decrypts
 
-- [AESEncryption.java](./src/main/java/org/sri/passmanager/AESEncryption.java) : Contains two functions for encoding and decoding respectively
+If someone steals the files:
+- They see only random binary data
+- They must brute-force the master password offline
 
-```java
-    public String encrypt(String plaintext, String SECRET_KEY) { 
-    // To encrypt the given plaintext and return the encrypted text
-    }
-    public String decrypt(String encryptedText, String SECRET_KEY) {
-    // To decrypt the given encrypted text and return the plaintext
-    }
- ```
+---
 
-- [StorageHandler.java](./src/main/java/org/sri/passmanager/StorageHandler.java) : Contains the functions to store to and from secondary storage
+## 📁 File Structure
 
-```java
-    public void storeToFile(String encryptedText, Path filePath) {
-    // To store to secondary storage
-    }
-    public void readFile(Path filePath) {
-        // To read from secondary storage
-    }
+```text
+├── vault.dat       # Vault metadata (salt + verification blob)
+├── passwords.dat   # Encrypted password entries
+└── src/
+    └── org/sri/passmanager/
+        ├── Main.java
+        ├── VaultCreator.java
+        ├── VaultLogin.java
+        ├── VaultData.java
+        ├── VaultFileWriter.java
+        ├── VaultFileReader.java
+        ├── AESEncryption.java
+        ├── PasswordEntry.java
+        ├── PasswordFileWriter.java
+        └── PasswordFileReader.java
 ```
-  
-- [CLI.java](./src/main/java/org/sri/passmanager/CLI.java) : Contains code for command line interface
+
+
+---
+
+##  Core Concepts
+
+### 1. Vault Creation (`vault.dat`)
+- Generated **once**
+- Stores:
+    - Random salt
+    - Encrypted verification string (`"VAULT_OK"`)
+- Used only to verify the master password
+
+### 2. Login
+- User enters master password
+- PBKDF2 derives encryption key
+- Verification blob is decrypted
+- If successful → encryption key stays in memory
+
+### 3. Password Storage (`passwords.dat`)
+- Each password entry contains:
+    - Site
+    - Username
+    - Encrypted password (AES-GCM)
+- Every password uses a **fresh random IV**
+- No plaintext passwords are written to disk
+
+---
+
+## 🔑 Cryptography Used
+
+| Purpose | Algorithm |
+|------|----------|
+| Key derivation | PBKDF2WithHmacSHA256 |
+| Encryption | AES-256-GCM |
+| Integrity | Built-in AEAD authentication |
+| Randomness | SecureRandom |
+
+**Important rules followed:**
+- PBKDF2 runs **only once per login**
+- AES-GCM used for all encryption
+- No hardcoded salts or IVs
+- No ECB, CBC, or custom crypto
+
+---
+
+## ▶️ How to Run
+
+### Requirements
+- Java **21** (used here)
+- Maven or any Java IDE (IntelliJ / Eclipse / VS Code)
+
+### Compile & Run
+```bash
+javac Main.java
+java Main
+```
+
+## ⚠️ Limitations
+
+This project **does not** include:
+
+- GUI
+- Clipboard protection
+- Auto-lock timer
+- Password search/edit/delete
+- Secure password input masking
+- Hardware-backed key storage
+
+## ❗ Threat Model
+
+This project **protects** against:
+
+- File theft
+- Offline brute-force attacks
+- Accidental plaintext leaks 
+
+It **does not protect** against:
+- Malware / keyloggers
+- Compromised OS or JVM
+- Screen capture attacks
+- Physical attacker with unlocked session
+
+## 📜 Disclaimer
+
+This project is for learning and personal use.  
+Do not use it as-is for high-risk environments without further hardening and audit.
