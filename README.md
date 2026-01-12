@@ -28,7 +28,7 @@ If someone steals the files:
 ```text
 ├── vault.dat       # Vault metadata (salt + verification blob)
 ├── passwords.dat   # Encrypted password entries
-└── src/
+└── src/main/java
     └── org/sri/passmanager/
         ├── Main.java
         ├── VaultCreator.java
@@ -90,7 +90,7 @@ If someone steals the files:
 ## ▶️ How to Run
 
 ### Requirements
-- Java **21** (used here)
+- Java **17** (minimum)
 - Maven or any Java IDE (IntelliJ / Eclipse / VS Code)
 
 ### Compile & Run
