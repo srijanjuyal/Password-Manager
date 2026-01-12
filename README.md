@@ -17,7 +17,7 @@ This project is designed to demonstrate **correct cryptographic architecture**, 
 - All stored passwords are encrypted using **AES-GCM**
 - If the master password is wrong, nothing decrypts
 
-If someone steals the files:
+If someone steals the file:
 - They see only random binary data
 - They must brute-force the master password offline
 
@@ -26,8 +26,7 @@ If someone steals the files:
 ## 📁 File Structure
 
 ```text
-├── vault.dat       # Vault metadata (salt + verification blob)
-├── passwords.dat   # Encrypted password entries
+├── vault.dat       # Unified encrypted storage (vault metadata + password entries)
 └── src/main/java
     └── org/sri/passmanager/
         ├── Main.java
@@ -47,26 +46,36 @@ If someone steals the files:
 
 ##  Core Concepts
 
-### 1. Vault Creation (`vault.dat`)
-- Generated **once**
-- Stores:
-    - Random salt
-    - Encrypted verification string (`"VAULT_OK"`)
-- Used only to verify the master password
-
-### 2. Login
-- User enters master password
-- PBKDF2 derives encryption key
-- Verification blob is decrypted
-- If successful → encryption key stays in memory
-
-### 3. Password Storage (`passwords.dat`)
-- Each password entry contains:
-    - Site
-    - Username
-    - Encrypted password (AES-GCM)
-- Every password uses a **fresh random IV**
+### 1. Unified Encrypted Storage (`vault.dat`)
+- **Single file** containing all encrypted data
+- File structure:
+    1. **Vault metadata** (header):
+        - Magic header (`"VLT1"`)
+        - Random salt
+        - Encrypted verification string (`"VAULT_OK"`) with IV
+    2. **Password entries** (body):
+        - Each entry contains:
+            - Site
+            - Username
+            - Encrypted password (AES-GCM with fresh random IV)
+- All data is encrypted and stored together in one file
 - No plaintext passwords are written to disk
+
+### 2. Vault Creation
+- Generated **once** when first setting master password
+- Creates unified storage file with vault metadata
+- Verification blob ensures master password correctness
+
+### 3. Login
+- User enters master password
+- PBKDF2 derives encryption key from master password + salt
+- Verification blob is decrypted to verify password
+- If successful → encryption key stays in memory for session
+
+### 4. Password Storage
+- Password entries are appended to the unified `vault.dat` file
+- Every password uses a **fresh random IV** for encryption
+- All entries are encrypted using the same session key
 
 ---
 
