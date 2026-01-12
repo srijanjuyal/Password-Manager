@@ -18,9 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- This part is for mentioning which class is entrypoint-->
     <build>
-
             <plugins>
                 <!-- Compiler -->
                 <plugin>
@@ -32,6 +30,7 @@
                     </configuration>
                 </plugin>
 
+                <!-- Maven enforcer plugin to run only on java 17+ -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -57,7 +56,7 @@
                     </executions>
                 </plugin>
 
-                <!-- Maven enforcer plugin to run only on java 17+ -->
+                <!-- This part is for mentioning which class is entrypoint -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
