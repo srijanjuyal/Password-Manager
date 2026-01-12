@@ -6,7 +6,7 @@
 
     <groupId>org.sri.passmanager</groupId>
     <artifactId>password-manager</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Password Manager</name>
