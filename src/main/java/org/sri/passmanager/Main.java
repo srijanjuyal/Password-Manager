@@ -2,6 +2,7 @@ package org.sri.passmanager;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.io.File;
 
@@ -9,10 +10,10 @@ import java.io.File;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
 
-    private static final String VAULT_FILE = "vault.dat";
-    private static final String PASSWORD_FILE = "passwords.dat";
+    private static final String VAULT_FILE = "vault.bin";
 
     private static byte[] encryptionKey = null; // in-memory session key
+    private static VaultStore vaultStore = null;    // in-memory vault
 
     public static void main(String[] args) {
 
@@ -52,7 +53,10 @@ public class Main {
         char[] masterPassword = scanner.nextLine().toCharArray();
 
         VaultData vaultData = VaultCreator.createVault(masterPassword);
-        VaultFileWriter.save(vaultData, VAULT_FILE);
+        List<PasswordEntry> emptyEntries = new ArrayList<>();
+
+        vaultStore = new VaultStore(vaultData, emptyEntries);
+        VaultStoreWriter.save(VAULT_FILE, vaultData, emptyEntries);
 
         System.out.println("Vault created successfully.");
     }
@@ -69,7 +73,7 @@ public class Main {
             return;
         }
 
-        VaultData vaultData = VaultFileReader.load(VAULT_FILE);
+        vaultStore = VaultStoreReader.load(VAULT_FILE);
 
         System.out.print("Enter master password: ");
         char[] password = scanner.nextLine().toCharArray();
@@ -77,15 +81,16 @@ public class Main {
         try {
             encryptionKey = VaultLogin.login(
                     password,
-                    vaultData.salt(),
-                    vaultData.verifyIv(),
-                    vaultData.verifyCiphertext()
+                    vaultStore.getVaultData().salt(),
+                    vaultStore.getVaultData().verifyIv(),
+                    vaultStore.getVaultData().verifyCiphertext()
             );
 
             System.out.println("Login successful.");
 
         } catch (SecurityException e) {
             System.out.println("Wrong master password.");
+            vaultStore = null;
         } finally {
             Arrays.fill(password, '\0');
         }
@@ -93,7 +98,7 @@ public class Main {
 
     // ===== OPTION 3 =====
     private static void addPassword(Scanner scanner) {
-        if (encryptionKey == null) {
+        if (encryptionKey == null || vaultStore == null) {
             System.out.println("Login first.");
             return;
         }
@@ -119,28 +124,31 @@ public class Main {
         PasswordEntry entry =
                 new PasswordEntry(site, username, encrypted);
 
-        PasswordFileWriter.append(PASSWORD_FILE, entry);
+        vaultStore.getEntries().add(entry);
+
+        // persist entire vault
+        VaultStoreWriter.save(
+                VAULT_FILE,
+                vaultStore.getVaultData(),
+                vaultStore.getEntries()
+        );
 
         System.out.println("Password stored securely.");
     }
 
     // ===== OPTION 4 =====
     private static void readPasswords() {
-        if (encryptionKey == null) {
+        if (encryptionKey == null || vaultStore == null) {
             System.out.println("Login first.");
             return;
         }
 
-        File file = new File(PASSWORD_FILE);
-        if (!file.exists()) {
+        if (vaultStore.getEntries().isEmpty()) {
             System.out.println("No stored passwords.");
             return;
         }
 
-        List<PasswordEntry> entries =
-                PasswordFileReader.readAll(PASSWORD_FILE);
-
-        for (PasswordEntry entry : entries) {
+        for (PasswordEntry entry : vaultStore.getEntries()) {
             byte[] decrypted =
                     AESEncryption.decrypt(
                             entry.getEncryptedPassword(), encryptionKey);
