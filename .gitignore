@@ -40,3 +40,4 @@ build/
 ### Password Files ###
 vault.dat
 passwords.dat
+vault.bin
