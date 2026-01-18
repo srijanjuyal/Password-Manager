@@ -4,8 +4,6 @@ A **local, file-based password manager** written in Java.
 All passwords are encrypted using **AES-256-GCM**, protected by a **single master password**.  
 No server. No cloud. No plaintext storage.
 
-This project is designed to demonstrate **correct cryptographic architecture**, not UI polish.
-
 ---
 
 ##  Security Model
@@ -26,8 +24,7 @@ If someone steals the files:
 ## 📁 File Structure
 
 ```text
-├── vault.dat       # Vault metadata (salt + verification blob)
-├── passwords.dat   # Encrypted password entries
+├── vault.bin       # Unified password storage file
 └── src/main/java
     └── org/sri/passmanager/
         ├── Main.java
@@ -47,20 +44,11 @@ If someone steals the files:
 
 ##  Core Concepts
 
-### 1. Vault Creation (`vault.dat`)
-- Generated **once**
-- Stores:
+### 1. Vault Creation and Password Storage (`vault.bin`)
+- Generated **once** and later updated with passwords
+- Stores (to verify Master Password):
     - Random salt
     - Encrypted verification string (`"VAULT_OK"`)
-- Used only to verify the master password
-
-### 2. Login
-- User enters master password
-- PBKDF2 derives encryption key
-- Verification blob is decrypted
-- If successful → encryption key stays in memory
-
-### 3. Password Storage (`passwords.dat`)
 - Each password entry contains:
     - Site
     - Username
@@ -68,16 +56,25 @@ If someone steals the files:
 - Every password uses a **fresh random IV**
 - No plaintext passwords are written to disk
 
+### 2. Login
+- User enters master password
+- PBKDF2 derives encryption key
+- Verification blob is decrypted
+- If successful → encryption key stays in memory
+
+### Exit
+- Wipes the encryption key from memory
+
 ---
 
 ## 🔑 Cryptography Used
 
-| Purpose | Algorithm |
-|------|----------|
-| Key derivation | PBKDF2WithHmacSHA256 |
-| Encryption | AES-256-GCM |
-| Integrity | Built-in AEAD authentication |
-| Randomness | SecureRandom |
+| Purpose        | Algorithm                    |
+|----------------|------------------------------|
+| Key derivation | PBKDF2WithHmacSHA256         |
+| Encryption     | AES-256-GCM                  |
+| Integrity      | Built-in AEAD authentication |
+| Randomness     | SecureRandom                 |
 
 **Important rules followed:**
 - PBKDF2 runs **only once per login**
