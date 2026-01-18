@@ -62,7 +62,7 @@ If someone steals the files:
 - Verification blob is decrypted
 - If successful → encryption key stays in memory
 
-### Exit
+### 3. Exit
 - Wipes the encryption key from memory
 
 ---
