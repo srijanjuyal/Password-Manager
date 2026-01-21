@@ -1,7 +1,7 @@
 # Java Password Manager (Local, Encrypted)
 
 A **local, file-based password manager** written in Java.  
-All passwords are encrypted using **AES-256-GCM**, protected by a **single master password**.  
+All passwords are encrypted using **AES-256-GCM** and using password based key derivation function **PBKDF2**, protected by a **single master password**.  
 No server. No cloud. No plaintext storage.
 
 ---
@@ -31,12 +31,11 @@ If someone steals the files:
         ├── VaultCreator.java
         ├── VaultLogin.java
         ├── VaultData.java
-        ├── VaultFileWriter.java
-        ├── VaultFileReader.java
+        ├── VaultStore.java
+        ├── VaultStoreReader.java
+        ├── VaultStoreWriter.java
         ├── AESEncryption.java
-        ├── PasswordEntry.java
-        ├── PasswordFileWriter.java
-        └── PasswordFileReader.java
+        └── PasswordEntry.java
 ```
 
 
